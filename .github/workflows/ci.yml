@@ -1,0 +1,29 @@
+name: "Continuous Integration"
+on: [ push ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: "Install Nix"
+        uses: nixbuild/nix-quick-install-action@v30
+      - name: Build binary
+        run: nix build .
+      - name: Build docker image
+        run: nix build -o docker.tar.gz .#docker
+      - name: Archive binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: "gotmpl-cfg.x86_64"
+          path: result/bin/gotmpl-cfg
+          if-no-files-found: error
+      - name: "Login to registry"
+        run: echo "${{ secrets.GITHUB_TOKEN}}" | skopeo login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Push docker image
+        run: skopeo --insecure-policy copy "docker-archive:docker.tar.gz" "docker://ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:dev-${{ github.sha }}"
