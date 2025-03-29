@@ -25,6 +25,13 @@ func renderTemplate(templatePath string) (string, bool) {
 		"env": func(name string) string {
 			return os.Getenv(name)
 		},
+		"envDefault": func(name string, defaultVal string) string {
+			value, exists := os.LookupEnv(name)
+			if !exists {
+				return defaultVal
+			}
+			return value
+		},
 		"requiredEnv": func(name string) string {
 			value, exists := os.LookupEnv(name)
 			if !exists {
