@@ -1,0 +1,6 @@
+# devenv.sh
+/.devenv
+/.direnv
+
+# nixos
+/result
