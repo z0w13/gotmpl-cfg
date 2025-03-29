@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -35,7 +34,7 @@ func renderTemplate(templatePath string) (string, bool) {
 		"requiredEnv": func(name string) string {
 			value, exists := os.LookupEnv(name)
 			if !exists {
-				fmt.Printf("ERROR: requiredEnv, env var %s is required", name)
+				log.Printf("ERROR: requiredEnv, env var %s is required\n", name)
 				templateError = true
 				return ""
 			} else {
@@ -45,7 +44,7 @@ func renderTemplate(templatePath string) (string, bool) {
 		"readFile": func(path string) string {
 			data, err := os.ReadFile(path)
 			if err != nil {
-				fmt.Printf("ERROR: readFile, error while reading %s: %s", path, err)
+				log.Printf("ERROR: readFile, error while reading %s: %s\n", path, err)
 				templateError = true
 				return ""
 			}
@@ -55,17 +54,17 @@ func renderTemplate(templatePath string) (string, bool) {
 
 	templateText, err := os.ReadFile(templatePath)
 	if err != nil {
-		log.Fatalf("ERROR: couldn't read template: %s", err)
+		log.Fatalf("ERROR: couldn't read template: %s\n", err)
 	}
 
 	tmpl, err := template.New("config").Funcs(funcMap).Parse(string(templateText))
 	if err != nil {
-		log.Fatalf("ERROR: couldn't parse template: %s", err)
+		log.Fatalf("ERROR: couldn't parse template: %s\n", err)
 	}
 
 	templResult := new(strings.Builder)
 	if err := tmpl.Execute(templResult, nil); err != nil {
-		log.Fatalf("ERROR: couldn't render template: %s", err)
+		log.Fatalf("ERROR: couldn't render template: %s\n", err)
 	}
 
 	return templResult.String(), templateError
@@ -95,15 +94,15 @@ func main() {
 	}
 
 	if err := os.WriteFile(*outPath, []byte(templResult), fs.FileMode(fileMode)); err != nil {
-		log.Fatalf("ERROR: couldn't write output file %s: %s", *outPath, err)
+		log.Fatalf("ERROR: couldn't write output file %s: %s\n", *outPath, err)
 	}
 
 	if err := os.Chmod(*outPath, fs.FileMode(fileMode)); err != nil {
-		log.Fatalf("ERROR: couldn't chmod output file %s: %s", *outPath, err)
+		log.Fatalf("ERROR: couldn't chmod output file %s: %s\n", *outPath, err)
 	}
 
 	if !*execCommand {
-		fmt.Printf("generated file %s from %s", *outPath, *templatePath)
+		log.Printf("generated file %s from %s\n", *outPath, *templatePath)
 		return
 	}
 
